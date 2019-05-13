@@ -2,7 +2,7 @@ import ddf.minim.*;
 import ddf.minim.analysis.*;
  
 Minim minim;
-AudioPlayer song;
+AudioInput song;
 FFT fft;
 
 // Variables qui définissent les "zones" du spectre
@@ -44,7 +44,7 @@ void setup()
   minim = new Minim(this);
  
   //Charger la chanson
-  song = minim.loadFile("DemoQuantumSounds.mp3");
+  song = minim.getLineIn(Minim.MONO, 1024);;
   
   //Créer l'objet FFT pour analyser la chanson
   fft = new FFT(song.bufferSize(), song.sampleRate());
@@ -87,7 +87,7 @@ void setup()
   background(0);
   
   //Commencer la chanson
-  song.play(0);
+ // song.play(0);
 }
  
 void draw()
