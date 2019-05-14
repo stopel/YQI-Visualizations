@@ -1,11 +1,16 @@
+/// Title Screen for Quantum Sound
+// Inspired by Daniel Gorelick - Tell Me Everything Show @ Pop Allston
+
+
 import ddf.minim.*;
 Minim minim;
 AudioInput in;
 
-/*
- * Daniel Gorelick
- * Processing Installation – Tell Me Everything Show @ Pop Allston
- */
+import themidibus.*;
+MidiBus myBus;
+
+int midiDevice = 0;
+
 Word quantum, sound, spencer, topel, kyle, serniak, luke, burkhart, florian, carle;
 float scale = 40;
 int mode;
@@ -21,12 +26,14 @@ boolean circles = true;
 color c = color(255, 80);  // Define color 'c'
 
 void setup() {
-  fullScreen(1);
+ //fullScreen(1);
+ size(1000, 800);
   //noSmooth();
   randomize();
   minim = new Minim(this);
   in = minim.getLineIn(Minim.MONO, 1024);
   
+  //Define the words and possitions
   quantum = new Word("quantum", start_x, start_y, scale);
   sound = new Word("sound", start_x, start_y +  scale*3, scale);
   spencer = new Word("spencer", start_x, start_y, scale);
@@ -37,6 +44,13 @@ void setup() {
   burkhart = new Word("burkhart", start_x, start_y +  scale*3, scale);
   florian = new Word("florian", start_x, start_y, scale);
   carle = new Word("carle", start_x, start_y +  scale*3, scale);
+  
+// List all our MIDI devices
+MidiBus.list();
+
+// Connect to input, output
+myBus = new MidiBus(this, midiDevice, 1);
+
 }
 
 void draw() {
@@ -165,15 +179,15 @@ void draw() {
 float hue_one, hue_two, speed_one, speed_two, radius_one, radius_two, radian_one, radian_two, line_width, color_saturation, color_value, color_cycle_speed, decay_rate, last_radius_one, last_radius_two, radius_one_start, radius_two_start;
 int tempX, tempY, offset;
 int control_width = 170/2;
-float speed_limit = 0.01;
+float speed_limit = 0.1;
 
 void randomize() {
   hue_one = random(360);
   hue_two = random(360);
   radius_one_start = random(40, 100);
   radius_two_start = random(100, 200);
-  speed_one = random(-speed_limit/2, speed_limit/2);
-  speed_two = random(-speed_limit/2, speed_limit/2);
+  //speed_one = random(-speed/2, speed/2);
+  //speed_two = random(-speed/2, speed/2);
   line_width = random(1, 25);
   color_saturation = random(150, 225);
   color_value = 150;
@@ -233,4 +247,22 @@ void keyPressed()
     name4 = true;    
     break;         
     }
+}
+
+// Called by TheMidiBus library each time a knob, slider or button
+// changes on the MIDI controller.
+void controllerChange(int channel, int number, int value) {
+  println(channel, number, value);
+  if(number == 0) {  // korg nanoKontrol2  slider 1
+    // takes value of the slider 1 and affect speed_one
+speed_one = map(value, 0, 127, -speed_limit, speed_limit); 
+//println(speed);
+  }
+  if(number == 1) {  // korg nanoKontrol scene 1, button 1 bottom
+    // takes value of the slider 2 and affect speed_two
+speed_two = map(value, 0, 127, -speed_limit, speed_limit); 
+  }
+  if(number == 2) {   // korg nanoKontrol scene 1, slider 1
+    // do something with value
+  }
 }
