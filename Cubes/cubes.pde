@@ -2,8 +2,13 @@ import ddf.minim.*;
 import ddf.minim.analysis.*;
  
 Minim minim;
-AudioInput song;
+AudioInput in;
 FFT fft;
+
+import themidibus.*;
+MidiBus myBus;
+
+int midiDevice = 0;
 
 // Variables qui définissent les "zones" du spectre
 // Par exemple, pour les basses, on prend seulement les premières 4% du spectre total
@@ -29,25 +34,28 @@ float scoreDecreaseRate = 25;
 
 // Cubes qui apparaissent dans l'espace
 int nbCubes;
+int cube_width, cube_heigh;
+boolean cube_key = false; 
 Cube[] cubes;
 
 //Lignes qui apparaissent sur les cotés
 int nbMurs = 500;
+boolean wall_key = false; 
 Mur[] murs;
  
 void setup()
 {
   //Faire afficher en 3D sur tout l'écran
-  fullScreen(P3D);
- 
+  //fullScreen(P3D);
+  size(1000, 800, P3D);
   //Charger la librairie minim
   minim = new Minim(this);
  
   //Charger la chanson
-  song = minim.getLineIn(Minim.MONO, 1024);;
+  in = minim.getLineIn(Minim.MONO, 1024);;
   
   //Créer l'objet FFT pour analyser la chanson
-  fft = new FFT(song.bufferSize(), song.sampleRate());
+  fft = new FFT(in.bufferSize(), in.sampleRate());
   
   //Un cube par bande de fréquence
   nbCubes = (int)(fft.specSize()*specHi);
@@ -86,14 +94,20 @@ void setup()
   //Fond noir
   background(0);
   
+  // List all our MIDI devices
+MidiBus.list();
+
+// Connect to input, output
+myBus = new MidiBus(this, midiDevice, 1);
+  
   //Commencer la chanson
- // song.play(0);
+ // in.play(0);
 }
  
 void draw()
 {
   //Faire avancer la chanson. On draw() pour chaque "frame" de la chanson...
-  fft.forward(song.mix);
+  fft.forward(in.mix);
   
   //Calcul des "scores" (puissance) pour trois catégories de son
   //D'abord, sauvgarder les anciennes valeurs
@@ -150,7 +164,9 @@ void draw()
     
     //La couleur est représentée ainsi: rouge pour les basses, vert pour les sons moyens et bleu pour les hautes. 
     //L'opacité est déterminée par le volume de la bande et le volume global.
+    if (cube_key == true){    
     cubes[i].display(scoreLow, scoreMid, scoreHi, bandValue, scoreGlobal);
+    }
   }
   
   //Murs lignes, ici il faut garder la valeur de la bande précédent et la suivante pour les connecter ensemble
@@ -201,7 +217,9 @@ void draw()
   {
     //On assigne à chaque mur une bande, et on lui envoie sa force.
     float intensity = fft.getBand(i%((int)(fft.specSize()*specHi)));
+        if (wall_key == true){    
     murs[i].display(scoreLow, scoreMid, scoreHi, intensity, scoreGlobal);
+        }
   }
 }
 
@@ -349,8 +367,63 @@ class Mur {
 void stop()
 {
   // always close Minim audio classes when you finish with them
-  song.close();
+  in.close();
   // always stop Minim before exiting
   minim.stop();
   super.stop();
+}
+
+
+// Called by TheMidiBus library each time a knob, slider or button
+// changes on the MIDI controller.
+void controllerChange(int channel, int number, int value) {
+  println(channel, number, value);
+
+  if((number == 18) || (number == 2)) {  // korg nanoKontrol slider 3
+    // move wall horizontally ATTENTION: Will affect possition of cubes in long run
+    width = round(map(value, 0, 127, 1, 1440)); 
+  }
+  if((number == 19) || (number == 3)) {   // korg nanoKontrol slider 4
+      // move wall vertically ATTENTION: Will affect possition of cubes in long run
+    height = round(map(value, 0, 127, 1, 900)); 
+  }
+
+    if(number == 4) {   // korg nanoKontrol Slider 5
+    // change number of walls
+ nbMurs = round(map(value, 0, 127, 0, 500));
+  }
+     if(number == 68) {   // korg nanoKontrol Slider 3 R button
+    // reset size
+    nbMurs = 500;
+  }  
+ if(number == 5 ) {   // korg nanoKontrol Slider 5
+    // change number of cube
+ nbCubes = round(map(value, 0, 127, 0, 102));
+  }
+  if(number == 53) {   // korg nanoKontrol Slider 3 R button
+    // flashes the cubes
+      cube_key = (cube_key ? false : true);
+  }
+   if(number == 69) {   // korg nanoKontrol Slider 3 R button
+    // reset size
+    nbCubes = (int)(fft.specSize()*specHi);
+  } 
+ 
+}
+
+void keyPressed() 
+{
+  switch(key) 
+    {
+// display/hide cubes
+    case 'c':
+    cube_key = (cube_key ? false : true);
+    break;  
+ // display/hide walls
+    case 'w':
+    wall_key = (wall_key ? false : true);
+    break;     
+    
+    }
+    
 }

@@ -26,24 +26,24 @@ boolean circles = true;
 color c = color(255, 80);  // Define color 'c'
 
 void setup() {
- //fullScreen(1);
- size(1000, 800);
+ fullScreen(1);
+ //size(1000, 800);
   //noSmooth();
   randomize();
   minim = new Minim(this);
   in = minim.getLineIn(Minim.MONO, 1024);
   
   //Define the words and possitions
-  quantum = new Word("quantum", start_x, start_y, scale);
-  sound = new Word("sound", start_x, start_y +  scale*3, scale);
+  quantum = new Word("quantum", start_x  +  scale*3, start_y, scale);
+  sound = new Word("sound", start_x  +  scale*3, start_y +  scale*3, scale);
   spencer = new Word("spencer", start_x, start_y, scale);
   topel = new Word("topel", start_x, start_y +  scale*3, scale);
-  kyle = new Word("kyle", start_x, start_y, scale);
-  serniak = new Word("serniak", start_x, start_y +  scale*3, scale);
-  luke = new Word("luke", start_x, start_y, scale);
-  burkhart = new Word("burkhart", start_x, start_y +  scale*3, scale);
-  florian = new Word("florian", start_x, start_y, scale);
-  carle = new Word("carle", start_x, start_y +  scale*3, scale);
+  kyle = new Word("kyle", start_x, start_y +  scale*3, scale);
+  serniak = new Word("serniak", start_x, start_y +  scale*6, scale);
+  luke = new Word("luke", start_x +  scale*6, start_y, scale);
+  burkhart = new Word("burkhart", start_x +  scale*6, start_y +  scale*3, scale);
+  florian = new Word("florian", start_x +  scale*3, start_y +  scale*3, scale);
+  carle = new Word("carle", start_x +  scale*3, start_y +  scale*6, scale);
   
 // List all our MIDI devices
 MidiBus.list();
@@ -186,8 +186,8 @@ void randomize() {
   hue_two = random(360);
   radius_one_start = random(40, 100);
   radius_two_start = random(100, 200);
-  //speed_one = random(-speed/2, speed/2);
-  //speed_two = random(-speed/2, speed/2);
+  //speed_one = random(-speed_limit/2, speed_limit/2);
+  //speed_two = random(-speed_limit/2, speed_limit/2);
   line_width = random(1, 25);
   color_saturation = random(150, 225);
   color_value = 150;
@@ -265,4 +265,18 @@ speed_two = map(value, 0, 127, -speed_limit, speed_limit);
   if(number == 2) {   // korg nanoKontrol scene 1, slider 1
     // do something with value
   }
+  if(number == 64) {   // korg nanoKontrol scene 1, slider 1
+    // do something with value
+  speed_one = random(-speed_limit/2, speed_limit/2);
+  speed_two = random(-speed_limit/2, speed_limit/2);
+  }
+  if(number == 32) {   // korg nanoKontrol scene 1, slider 1
+    // do something with value
+  hue_one = random(360);
+  hue_two = random(360);
+  }
+  if(number == 7 ) {   // korg nanoKontrol Slider 8
+    // Glitch background
+  background(round(map(value, 0, 127, 0, 255)));
+  } 
 }
